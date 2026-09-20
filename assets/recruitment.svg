@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+<rect width="900" height="620" rx="36" fill="#F3F6FF"/>
+<rect x="55" y="52" width="790" height="516" rx="24" fill="white" stroke="#DDE3F0" stroke-width="3"/>
+<circle cx="87" cy="82" r="7" fill="#9AA7C7"/><circle cx="111" cy="82" r="7" fill="#CBD3E5"/><circle cx="135" cy="82" r="7" fill="#E4E8F2"/>
+<rect x="92" y="132" width="124" height="24" rx="12" fill="#E6EBFF"/><text x="154" y="149" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#4059D6">CAREERS</text>
+<text x="92" y="215" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="#111827">함께 성장할 동료를 찾습니다</text>
+<text x="92" y="253" font-family="Arial,sans-serif" font-size="19" fill="#6B7280">회사소개 · 복지 · 채용절차 · FAQ를 한 페이지에</text>
+<rect x="92" y="298" width="716" height="82" rx="16" fill="#F8FAFC" stroke="#E5E7EB"/>
+<text x="120" y="333" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#111827">Operations Manager</text><text x="120" y="359" font-family="Arial,sans-serif" font-size="14" fill="#6B7280">운영 · 인사 · 총무</text>
+<rect x="661" y="318" width="116" height="42" rx="12" fill="#111827"/><text x="719" y="344" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="white">지원하기 →</text>
+<rect x="92" y="397" width="716" height="82" rx="16" fill="#F8FAFC" stroke="#E5E7EB"/>
+<text x="120" y="432" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#111827">Marketing Lead</text><text x="120" y="458" font-family="Arial,sans-serif" font-size="14" fill="#6B7280">브랜드 · 콘텐츠 · 퍼포먼스</text>
+<rect x="661" y="417" width="116" height="42" rx="12" fill="#111827"/><text x="719" y="443" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="white">지원하기 →</text>
+<text x="92" y="527" font-family="Arial,sans-serif" font-size="13" fill="#9CA3AF">샘플 화면 · 실제 고객 작업 아님</text>
+</svg>

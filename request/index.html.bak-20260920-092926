@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>비동기 작업 요청 | CLEAR MERIT</title>
+  <meta name="description" content="전화·미팅 없이 현재 문제와 원하는 결과를 보내고 CLEAR MERIT의 작은 1회 작업 범위를 확인합니다." />
+  <link rel="canonical" href="https://clear-merit.netlify.app/request/" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../"><span class="brand-mark">CM</span><span><strong>CLEAR MERIT</strong><small>중소기업 실무개선 파트너</small></span></a>
+  <a class="btn btn-light" href="../">홈으로</a>
+</header>
+<main>
+<section class="offer-hero intake-hero">
+  <span class="eyebrow">ASYNC REQUEST</span>
+  <h1>미팅 없이,<br />작업 가능 범위부터 확인합니다.</h1>
+  <p>전화번호는 받지 않습니다. 현재 문제와 원하는 결과만 보내주시면 가능한 작은 범위를 이메일로 확인합니다.</p>
+  <div class="offer-meta"><span>전화번호 불필요</span><span>무료 범위 확인</span><span>실제 작업은 범위 합의 후 유료</span></div>
+</section>
+<section class="section intake-section">
+  <div class="intake-layout">
+    <form class="intake-form" name="work-request" method="POST" action="/thanks/" data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="work-request" />
+      <input type="hidden" name="submission-id" id="submission-id" value="" />
+      <p class="honeypot"><label>비워두세요 <input name="bot-field" /></label></p>
+      <div class="form-grid two">
+        <label>업무 유형<select name="service" id="service" required>
+          <option value="">선택해 주세요</option>
+          <option value="candidate-review">후보자 비교정리</option>
+          <option value="quote-ops">견적업무 정리</option>
+          <option value="backoffice-overflow">백오피스 오버플로우</option>
+          <option value="other">기타 CLEAR MERIT 업무</option>
+        </select></label>
+        <label>회사/사업명<input type="text" name="company" autocomplete="organization" placeholder="선택 입력" /></label>
+      </div>
+      <label>회신받을 이메일<input type="email" name="email" autocomplete="email" required placeholder="name@company.com" /></label>
+      <label>현재 가장 불편한 한 가지<textarea name="problem" required rows="4" placeholder="예: 견적 문의마다 수량·납기 정보를 다시 확인하고 있습니다."></textarea></label>
+      <label>원하는 결과물<textarea name="desired-output" required rows="3" placeholder="예: 누락항목과 진행상태를 한 화면에서 보고 싶습니다."></textarea></label>
+      <div class="form-grid two">
+        <label>대략적인 물량<input type="text" name="volume" placeholder="예: 월 20~30건 / 파일 5개" /></label>
+        <label>희망 일정<input type="text" name="deadline" placeholder="예: 이번 주 / 급하지 않음" /></label>
+      </div>
+      <label>민감정보 포함 여부<select name="sensitive-data" required>
+        <option value="">선택해 주세요</option>
+        <option value="no">없음 / 가려서 전달 가능</option>
+        <option value="yes">포함될 수 있음 — 먼저 범위만 상담</option>
+      </select></label>
+      <div class="privacy-note" id="service-note">후보자 이력서·고객 개인정보·계약서 원문 등 민감자료는 이 폼에 붙이지 마세요. 먼저 범위만 확인합니다.</div>
+      <button class="btn btn-dark big" type="submit">범위·금액 요청하기 →</button>
+      <p class="micro-note">제출은 결제나 계약이 아닙니다. 범위·기간·고정가에 동의한 뒤 결제하고 작업을 시작합니다.</p>
+    </form>
+    <aside class="intake-side">
+      <span class="eyebrow">WHAT HAPPENS NEXT</span>
+      <h2>제출 후 이렇게 진행합니다.</h2>
+      <ol class="intake-steps">
+        <li><b>1. 범위 확인</b><span>자료 없이도 가능한 작은 시작점을 먼저 봅니다.</span></li>
+        <li><b>2. 결과물·기간·금액 안내</b><span>무엇을 언제까지 전달할지 짧게 정리합니다.</span></li>
+        <li><b>3. 동의 후 작업</b><span>합의된 입력자료만 받아 비동기로 진행합니다.</span></li>
+        <li><b>4. 결과물 전달</b><span>파일·표·정리본 등 실제 결과물로 확인합니다.</span></li>
+      </ol>
+      <div class="side-note"><b>민감자료는 나중에</b><p>처음 요청 단계에서는 개인정보나 기밀자료를 보내지 않아도 됩니다. 후보자 검토는 특히 익명화된 자료를 권장합니다.</p></div>
+      <a class="text-link" href="http://pf.kakao.com/_mTArX/chat" target="_blank" rel="noopener">폼 대신 카카오톡으로 문의 →</a>
+    </aside>
+  </div>
+</section>
+</main>
+<footer><div><strong>CLEAR MERIT</strong><span>중소기업 실무개선 파트너</span></div><p>Value, made clear.</p></footer>
+<script>
+  const params = new URLSearchParams(location.search);
+  const value = params.get('service');
+  const select = document.getElementById('service');
+  if (value && [...select.options].some(o => o.value === value)) select.value = value;
+  const note = document.getElementById('service-note');
+  if (value === 'candidate-review') note.textContent = '이 폼에는 후보자의 이름·연락처·사진·이력서 원문을 넣지 마세요. 먼저 범위만 확인한 뒤 익명화된 자료 전달 방법을 안내합니다.';
+  if (value === 'quote-ops') note.textContent = '실제 고객 이름·연락처·계약정보는 넣지 않아도 됩니다. 문의 구조와 누락되는 항목만 설명해 주세요.';
+  if (value === 'backoffice-overflow') note.textContent = '원본 파일 대신 파일 종류·행 수·완료 기준만 설명해도 됩니다. 기밀자료는 범위 확인 후 최소한으로 전달합니다.';
+  const form = document.querySelector('form[name="work-request"]');
+  const submissionId = document.getElementById('submission-id');
+  form?.addEventListener('submit', () => {
+    const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    submissionId.value = id;
+    const data = new FormData(form);
+    const payload = {
+      kind: 'intake', submissionId: id, service: data.get('service'), company: data.get('company'),
+      email: data.get('email'), problem: data.get('problem'), desiredOutput: data.get('desired-output'),
+      volume: data.get('volume'), deadline: data.get('deadline'), sensitiveData: data.get('sensitive-data'),
+      sourceUrl: location.href, botField: data.get('bot-field') || ''
+    };
+    const json = JSON.stringify(payload);
+    const blob = new Blob([json], {type: 'application/json'});
+    const sent = navigator.sendBeacon ? navigator.sendBeacon('/intake-sync', blob) : false;
+    if (!sent) fetch('/intake-sync', {method:'POST', headers:{'content-type':'application/json'}, body:json, keepalive:true}).catch(()=>{});
+  });
+</script>
+</body>
+</html>

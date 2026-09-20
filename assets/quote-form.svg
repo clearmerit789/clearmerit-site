@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+<rect width="900" height="620" rx="36" fill="#F5F7F8"/>
+<rect x="70" y="46" width="760" height="528" rx="24" fill="white" stroke="#DFE4E8" stroke-width="3"/>
+<text x="112" y="126" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#3458EB">QUOTE REQUEST</text>
+<text x="112" y="178" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="#111827">견적에 필요한 정보를 한 번에</text>
+<text x="112" y="214" font-family="Arial,sans-serif" font-size="17" fill="#6B7280">전화·이메일 재확인 없이 바로 처리 가능한 접수 구조</text>
+<g font-family="Arial,sans-serif" font-size="13" fill="#7B8492">
+<text x="112" y="265">업체명</text><text x="462" y="265">담당자</text><text x="112" y="352">품목 / 서비스</text><text x="462" y="352">수량</text><text x="112" y="439">희망 납기</text>
+</g>
+<g fill="#F8FAFC" stroke="#E4E8EE"><rect x="112" y="280" width="310" height="48" rx="10"/><rect x="462" y="280" width="310" height="48" rx="10"/><rect x="112" y="367" width="310" height="48" rx="10"/><rect x="462" y="367" width="310" height="48" rx="10"/><rect x="112" y="454" width="310" height="48" rx="10"/></g>
+<rect x="462" y="454" width="310" height="48" rx="10" fill="#FFFFFF" stroke="#B7C0CC" stroke-dasharray="8 8"/><text x="617" y="484" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#6B7280">+ 도면 / 자료 첨부</text>
+<rect x="591" y="521" width="181" height="40" rx="11" fill="#111827"/><text x="682" y="546" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="white">견적 요청 보내기</text>
+</svg>
