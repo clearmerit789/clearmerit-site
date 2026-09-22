@@ -62,3 +62,51 @@ CLEAR MERIT helps small teams reduce work that only moves forward when somebody 
 https://clearmerit.kr
 
 > Internal / Working Demo disclosure: this template is derived from CLEAR MERIT's own operating systems and is not presented as an external client deployment.
+
+
+---
+
+## Template 02 — Human approval gate for risky automation actions
+
+**File:** `CLEAR_MERIT_Human_Approval_Gate.json`
+
+### Problem it solves
+
+Some actions are too risky to trigger automatically just because a workflow reached a node: customer-facing sends, record deletions, irreversible updates, purchases, or any action with real cost.
+
+This template separates **requesting an action** from **releasing an approved action**.
+
+### Flow
+
+Pending request → internal approval email → human reviews Airtable → Approved / Rejected → approved request is released once
+
+### Required Airtable fields
+
+- `Action Name`
+- `Action Payload`
+- `Approval Status`
+- `Requested By`
+- `Requested At`
+
+Optional audit fields:
+
+- `Approved By`
+- `Approved At`
+
+### Reliability behavior
+
+- Pending requests generate one internal notification.
+- Rejected requests never reach the action-release branch.
+- Approved records are released once per Airtable record ID.
+- Repeated schedule runs do not re-release the same approved request.
+- The template ends at a **No Operation** node. Replace that node with your real external action only after testing both approval paths.
+
+### Safety note
+
+Do not change the action payload after approval. Treat approval as approval of the exact payload that was reviewed.
+
+### Validation
+
+The template was imported successfully into n8n 2.39.5 and re-exported successfully.
+
+> Internal / Working Demo disclosure: this template is derived from CLEAR MERIT's own operating patterns and is not presented as an external client deployment.

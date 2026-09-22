@@ -1,0 +1,332 @@
+{
+  "name": "Gate risky Airtable automation actions behind human approval",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "id": "cm2-schedule-pending",
+      "name": "Check Pending Approvals",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -760,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "cm2-schedule-approved",
+      "name": "Check Approved Requests",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -760,
+        260
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "cm2-manual",
+      "name": "Manual Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_AIRTABLE_BASE_ID"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_TABLE_ID"
+        },
+        "filterByFormula": "AND({Approval Status}='Pending',{Action Name}!=BLANK())",
+        "options": {
+          "fields": [
+            "Action Name",
+            "Action Payload",
+            "Approval Status",
+            "Requested By",
+            "Requested At"
+          ]
+        }
+      },
+      "id": "cm2-airtable-pending",
+      "name": "Find Pending Approval Requests",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -470,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nconst state = $getWorkflowStaticData('global');\nstate.notified = state.notified || {};\nconst out = [];\nfor (const item of rows) {\n  const j = item.json || {};\n  const requestId = String(j.id || j['Request ID'] || '');\n  if (!requestId || state.notified[requestId]) continue;\n  state.notified[requestId] = Date.now();\n  out.push({ json: {\n    requestId,\n    actionName: String(j['Action Name'] || 'Unnamed action'),\n    actionPayload: String(j['Action Payload'] || ''),\n    requestedBy: String(j['Requested By'] || ''),\n    requestedAt: String(j['Requested At'] || ''),\n    subject: 'Approval required: ' + String(j['Action Name'] || 'Unnamed action'),\n    message: 'A risky automation action is waiting for human approval.\\n\\nRequest ID: ' + requestId + '\\nAction: ' + String(j['Action Name'] || '') + '\\nRequested by: ' + String(j['Requested By'] || '') + '\\nRequested at: ' + String(j['Requested At'] || '') + '\\n\\nPayload:\\n' + String(j['Action Payload'] || '') + '\\n\\nReview the record in Airtable and set Approval Status to Approved or Rejected. No external action is executed while status remains Pending.'\n  }});\n}\nreturn out;"
+      },
+      "id": "cm2-code-notify",
+      "name": "Notify Each Pending Request Once",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "approver@example.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "cm2-gmail",
+      "name": "Email Human Approver",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        150,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_AIRTABLE_BASE_ID"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_TABLE_ID"
+        },
+        "filterByFormula": "AND({Approval Status}='Approved',{Action Name}!=BLANK())",
+        "options": {
+          "fields": [
+            "Action Name",
+            "Action Payload",
+            "Approval Status",
+            "Approved By",
+            "Approved At"
+          ]
+        }
+      },
+      "id": "cm2-airtable-approved",
+      "name": "Find Approved Requests",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -470,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nconst state = $getWorkflowStaticData('global');\nstate.released = state.released || {};\nconst out = [];\nfor (const item of rows) {\n  const j = item.json || {};\n  const requestId = String(j.id || j['Request ID'] || '');\n  if (!requestId || state.released[requestId]) continue;\n  state.released[requestId] = Date.now();\n  out.push({ json: {\n    requestId,\n    approvalStatus: 'Approved',\n    actionName: String(j['Action Name'] || 'Unnamed action'),\n    actionPayload: String(j['Action Payload'] || ''),\n    approvedBy: String(j['Approved By'] || ''),\n    approvedAt: String(j['Approved At'] || ''),\n    releasedAt: new Date().toISOString(),\n    note: 'Connect the real external action after this node. This request ID will be released only once by this workflow.'\n  }});\n}\nreturn out;"
+      },
+      "id": "cm2-code-release",
+      "name": "Release Each Approved Request Once",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        260
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "cm2-noop",
+      "name": "Replace With Risky External Action",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        150,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "width": 430,
+        "height": 270,
+        "content": "## 1. Approval queue in Airtable\nUse fields **Action Name**, **Action Payload**, **Approval Status**, **Requested By**, and **Requested At**. Optional audit fields: **Approved By** and **Approved At**. New requests must start as **Pending**."
+      },
+      "id": "cm2-note-1",
+      "name": "Approval Queue Schema",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        -390
+      ]
+    },
+    {
+      "parameters": {
+        "width": 430,
+        "height": 270,
+        "content": "## 2. Human decides outside the automation\nPending requests trigger **one internal email**. The workflow does not execute the action. A human reviews the Airtable record and changes Approval Status to **Approved** or **Rejected**."
+      },
+      "id": "cm2-note-2",
+      "name": "Human Decision Boundary",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        -390
+      ]
+    },
+    {
+      "parameters": {
+        "width": 430,
+        "height": 270,
+        "content": "## 3. Approved requests release once\nOnly **Approved** records reach the release node. Workflow static data remembers each Airtable record ID so repeated schedule runs cannot release the same request twice. Replace the final No Operation node with your real external action."
+      },
+      "id": "cm2-note-3",
+      "name": "One-Time Release",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        320,
+        -390
+      ]
+    },
+    {
+      "parameters": {
+        "width": 900,
+        "height": 230,
+        "content": "## CLEAR MERIT Internal / Working Demo\nA reusable human-approval pattern for actions that can create cost, contact customers, alter important records, or trigger irreversible side effects. This is **internal operating proof, not an external client case study**. Test Pending → Rejected and Pending → Approved paths before connecting any real action.\n\nCLEAR MERIT · https://clearmerit.kr"
+      },
+      "id": "cm2-note-4",
+      "name": "Proof and Safety Disclosure",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -250,
+        470
+      ]
+    }
+  ],
+  "connections": {
+    "Check Pending Approvals": {
+      "main": [
+        [
+          {
+            "node": "Find Pending Approval Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Approved Requests": {
+      "main": [
+        [
+          {
+            "node": "Find Approved Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Test": {
+      "main": [
+        [
+          {
+            "node": "Find Pending Approval Requests",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Find Approved Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Pending Approval Requests": {
+      "main": [
+        [
+          {
+            "node": "Notify Each Pending Request Once",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Each Pending Request Once": {
+      "main": [
+        [
+          {
+            "node": "Email Human Approver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Approved Requests": {
+      "main": [
+        [
+          {
+            "node": "Release Each Approved Request Once",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Release Each Approved Request Once": {
+      "main": [
+        [
+          {
+            "node": "Replace With Risky External Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {},
+  "id": "CMTemplateHumanApproval01",
+  "versionId": "8c5b56c0-8a47-4d31-8c16-5aa4de483201",
+  "isArchived": false,
+  "tags": []
+}
