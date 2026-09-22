@@ -1,0 +1,216 @@
+{
+  "name": "Alert humans about due Airtable actions without duplicate notifications",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "id": "cm-schedule-001",
+      "name": "Check Every 10 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -620,
+        40
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "cm-manual-001",
+      "name": "Manual Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_AIRTABLE_BASE_ID"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_TABLE_ID"
+        },
+        "filterByFormula": "AND({Next Action At} != BLANK(), {Next Action At} <= NOW(), NOT(OR({Status}='Done',{Status}='Closed',{Status}='Rejected',{Status}='Suppressed')))",
+        "options": {
+          "fields": [
+            "Company",
+            "Status",
+            "Next Action",
+            "Next Action At"
+          ]
+        }
+      },
+      "id": "cm-airtable-001",
+      "name": "Find Due Airtable Records",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -330,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nconst state = $getWorkflowStaticData('global');\nstate.seen = state.seen || {};\nconst now = Date.now();\nconst due = [];\n\nfor (const item of rows) {\n  const j = item.json || {};\n  const recordId = String(j.id || j.recordId || '');\n  const label = String(j.Company || j.Name || j.Title || recordId || 'Untitled');\n  const status = String(j.Status?.name || j.Status || '');\n  const nextAt = String(j['Next Action At'] || '');\n  const next = String(j['Next Action'] || '');\n\n  if (!nextAt) continue;\n  const t = Date.parse(nextAt);\n  if (!Number.isFinite(t) || t > now) continue;\n\n  const key = [recordId || label, nextAt, next].join('|');\n  if (state.seen[key]) continue;\n\n  state.seen[key] = now;\n  due.push({ label, status, nextAt, next });\n}\n\nconst keys = Object.keys(state.seen);\nif (keys.length > 1500) {\n  keys.sort((a,b) => state.seen[a] - state.seen[b])\n      .slice(0, keys.length - 1000)\n      .forEach(k => delete state.seen[k]);\n}\n\nif (!due.length) return [];\n\ndue.sort((a,b) => Date.parse(a.nextAt) - Date.parse(b.nextAt));\nconst lines = due.map((d,i) =>\n  String(i + 1) + '. ' + d.label + ' | ' + (d.status || 'No status') + ' | ' + d.nextAt + '\\n   Next: ' + (d.next || '(blank)')\n).join('\\n\\n');\n\nreturn [{\n  json: {\n    subject: 'Due next actions: ' + due.length,\n    message: 'These items reached their next-action time.\\n\\n' + lines + '\\n\\nThis workflow sends an internal alert only. A human decides the next action.'\n  }\n}];"
+      },
+      "id": "cm-code-001",
+      "name": "Prevent Duplicate Alerts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "you@example.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "cm-gmail-001",
+      "name": "Send Internal Due Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        250,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "width": 440,
+        "height": 260,
+        "content": "## 1. Connect Airtable\nUse a table with **Status**, **Next Action**, and **Next Action At**. **Company**, **Name**, or **Title** can be used as the display label. Replace the placeholder Base and Table IDs, then connect your Airtable credential."
+      },
+      "id": "cm-note-001",
+      "name": "Airtable Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -450,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "width": 430,
+        "height": 260,
+        "content": "## 2. Why the Code node exists\nThe workflow stores an idempotency key in workflow static data. The same record + due time + next action is alerted only once, even if the schedule keeps running."
+      },
+      "id": "cm-note-002",
+      "name": "Dedupe Logic",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        20,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "width": 430,
+        "height": 260,
+        "content": "## 3. Human-in-the-loop by default\nConnect Gmail and replace **you@example.com**. This workflow only alerts an internal human. It does **not** automatically send follow-ups to customers, candidates, or employees."
+      },
+      "id": "cm-note-003",
+      "name": "Human Approval Boundary",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "width": 900,
+        "height": 220,
+        "content": "## CLEAR MERIT Internal / Working Demo\nThis public template is adapted from CLEAR MERIT's own operations workflows. It is **internal operating proof, not an external client case study**. Test one due item, one retry, and one manual rerun before activation.\n\nCLEAR MERIT · https://clearmerit.kr"
+      },
+      "id": "cm-note-004",
+      "name": "Proof Disclosure",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        360
+      ]
+    }
+  ],
+  "connections": {
+    "Check Every 10 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Find Due Airtable Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Test": {
+      "main": [
+        [
+          {
+            "node": "Find Due Airtable Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Due Airtable Records": {
+      "main": [
+        [
+          {
+            "node": "Prevent Duplicate Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prevent Duplicate Alerts": {
+      "main": [
+        [
+          {
+            "node": "Send Internal Due Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {},
+  "id": "CMTemplateDueAlert01",
+  "versionId": "f5a75ee3-9667-4baf-9ca6-245d634b1c74",
+  "isArchived": false,
+  "tags": []
+}
